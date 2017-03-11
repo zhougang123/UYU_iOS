@@ -2,5 +2,5 @@
 # platform :ios, '9.0'
 
 target 'UYUClient' do
-
+pod 'AFNetworking', '~> 3.0.0'
 end
