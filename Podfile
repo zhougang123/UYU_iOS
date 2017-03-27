@@ -2,5 +2,8 @@
 # platform :ios, '9.0'
 
 target 'UYUClient' do
-pod 'AFNetworking', '~> 3.0.0'
+pod 'AFNetworking'
+pod 'SVProgressHUD'
+pod 'NJKWebViewProgress'
+pod 'MJRefresh'
 end

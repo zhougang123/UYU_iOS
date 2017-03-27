@@ -8,6 +8,9 @@
 
 #import "AppDelegate.h"
 
+
+AppDelegate *shareAppDelegate;
+
 @interface AppDelegate ()
 
 @end
@@ -17,9 +20,31 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    shareAppDelegate = self;
+    
+    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
+    self.window.backgroundColor = [UIColor whiteColor];
+    
+    
+    UYULoginViewController *tabVC = [[UYULoginViewController alloc] init];
+    self.window.rootViewController = tabVC;
+    [self.window makeKeyAndVisible];
+    
+    
     return YES;
 }
 
+- (void)showLoginViewController;
+{
+    UYULoginViewController *tabVC = [[UYULoginViewController alloc] init];
+    self.window.rootViewController = tabVC;
+}
+- (void)showTabbarViewController
+{
+    UYUTabBarController *tab = [[UYUTabBarController alloc] init];
+    self.window.rootViewController = tab;
+}
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
