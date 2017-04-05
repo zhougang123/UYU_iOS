@@ -11,7 +11,7 @@
 #import "UYUColor.h"
 #import "AppConfig.h"
 
-@interface UYUTabBarController ()
+@interface UYUTabBarController ()<UITabBarDelegate>
 
 @end
 
@@ -66,7 +66,8 @@
     NSArray *arrUrl = @[mineUrl, eyesightUrl, deviceUrl, billsUrl];
     NSMutableArray *arrVCs = [[NSMutableArray alloc] init];
     for (int i=0; i<arrTitle.count; i++) {
-        UYUWebViewController *perVC = [[UYUWebViewController alloc] initWithUrlString:arrUrl[i] rightHidden:i == 0?NO:YES];
+        NSString *urlString = [baseUrl stringByAppendingString:arrUrl[i]];
+        UYUWebViewController *perVC = [[UYUWebViewController alloc] initWithUrlString:urlString];
         switch (i) {
             case 0:
                 perVC.canPullDownRefresh = YES;
@@ -112,4 +113,8 @@
     return navController;
 }
 
+- (void)tabBar:(UITabBar *)tabBar didSelectItem:(UITabBarItem *)item
+{
+    
+}
 @end

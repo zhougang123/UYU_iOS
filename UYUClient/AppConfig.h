@@ -9,11 +9,12 @@
 #ifndef AppConfig_h
 #define AppConfig_h
 
+#define baseUrl @"http://121.40.177.111:8182"
 //测试环境
-#define mineUrl     @"http://121.40.177.111:8182/store/v1/page/index.html"
-#define eyesightUrl @"http://121.40.177.111:8182/store/v1/page/eye_sight.html"
-#define deviceUrl   @"http://121.40.177.111:8182/store/v1/page/dev.html"
-#define billsUrl    @"http://121.40.177.111:8182/store/v1/page/train.html"
+#define mineUrl     @"/store/v1/page/index.html"
+#define eyesightUrl @"/store/v1/page/eye_sight.html"
+#define deviceUrl   @"/store/v1/page/dev.html"
+#define billsUrl    @"/store/v1/page/train.html"
 
 //线上环境
 //#define mineUrl     @"http://121.40.177.111:10020/store/v1/page/index.html"

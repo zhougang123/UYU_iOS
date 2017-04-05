@@ -18,6 +18,10 @@
 
 #import "AFNetworking.h"
 
+#import "AppConfig.h"
+
+#import "NSString+Tools.h"
+
 @interface UYULoginViewController ()
 @property (nonatomic, strong) UIImageView *uyuImageView;
 @property (nonatomic, strong) UITextField *phoneTF;
@@ -42,7 +46,7 @@
         _phoneTF.leftView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 8, 0)];
         _phoneTF.leftViewMode = UITextFieldViewModeAlways;
         _phoneTF.tag = 1000;
-        _phoneTF.text = @"18978675643";
+        _phoneTF.text = @"13893541383";
         
     }
     return _phoneTF;
@@ -63,7 +67,7 @@
         _passwordTF.leftViewMode = UITextFieldViewModeAlways;
         _passwordTF.tag = 1001;
         _passwordTF.secureTextEntry = YES;
-        _passwordTF.text = @"675643";
+        _passwordTF.text = @"541383";
     }
     return _passwordTF;
 }
@@ -154,18 +158,18 @@
         return;
     }
    
-//    [shareAppDelegate showTabbarViewController];
-//    return;
+
     [self clearLocalCache];
     
     AFHTTPSessionManager *httpManage = [AFHTTPSessionManager manager];
     httpManage.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
     httpManage.requestSerializer = [AFHTTPRequestSerializer serializer];
     httpManage.responseSerializer = [AFHTTPResponseSerializer serializer];
-    NSDictionary *param = @{@"mobile": phone, @"password": password};
+    NSDictionary *param = @{@"mobile": phone, @"password": [password handleWithMD5].lowercaseString};
     
-   
-    [httpManage POST:@"http://121.40.177.111:10020/store/v1/api/login" parameters:param progress:^(NSProgress * _Nonnull uploadProgress) {
+    NSString *urlString = [baseUrl stringByAppendingString:@"/store/v1/api/login"];
+    
+    [httpManage POST:urlString parameters:param progress:^(NSProgress * _Nonnull uploadProgress) {
         
     } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
         
@@ -182,7 +186,10 @@
         NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers | NSJSONReadingMutableLeaves | NSJSONReadingAllowFragments  error:&praseError];
         if ([jsonDict[@"respcd"] isEqualToString:@"0000"]) {
             NSUserDefaults *userdefault = [NSUserDefaults standardUserDefaults];
-            [userdefault setValue:jsonDict[@"data"][@"userid"] forKey:@"userid"];
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+            [userInfo setValue:[jsonDict[@"data"][@"userid"] description] forKey:@"userid"];
+            [userInfo setValue:[jsonDict[@"data"][@"is_prepayment"] description] forKey:@"is_prepayment"];
+            [userdefault setValue:userInfo forKey:@"currentUserInfo"];
             [userdefault synchronize];
             [shareAppDelegate showTabbarViewController];
         }else{

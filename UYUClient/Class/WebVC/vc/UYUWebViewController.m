@@ -27,20 +27,18 @@
 @property (nonatomic, assign) BOOL hiddenRightBtn;
 @property (nonatomic, strong) NSArray *idleImages;
 @property (nonatomic, strong) NSArray *refreshingImages;
-
+@property (nonatomic, strong) NSDictionary *rightBtnConfigDict;
 @end
 
 @implementation UYUWebViewController
 
-- (instancetype)initWithUrlString:(NSString *)url rightHidden:(BOOL)hidden
+- (instancetype)initWithUrlString:(NSString *)url
 {
     self = [super init];
     if (self) {
         self.urlString = url;
-        self.hiddenRightBtn = hidden;
         self.canPullDownRefresh = NO;
         self.canPullUpRefresh = NO;
-        
     }
     return self;
 }
@@ -58,6 +56,8 @@
     }
     return _idleImages;
 }
+
+
 - (NSArray *)refreshingImages
 {
     if (_refreshingImages == nil) {
@@ -114,10 +114,11 @@
     if (_rightBtn == nil) {
         _rightBtn = [UIButton buttonWithType:UIButtonTypeCustom];
         _rightBtn.frame = CGRectMake(kScreenWidth - AdaptWidth(80) - 15, 20, AdaptWidth(80), 44);
+        _rightBtn.hidden = YES;
+        _rightBtn.titleLabel.textAlignment = NSTextAlignmentLeft;
         _rightBtn.titleLabel.font = [UIFont systemFontOfSize:AdaptWidth(15)];
-        [_rightBtn setTitle:@"退出登录" forState:UIControlStateNormal];
         [_rightBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        [_rightBtn addTarget:self action:@selector(logout:) forControlEvents:UIControlEventTouchUpInside];
+        [_rightBtn addTarget:self action:@selector(rightBtnAction:) forControlEvents:UIControlEventTouchUpInside];
         
     }
     return _rightBtn;
@@ -135,9 +136,19 @@
     }
     return _leftBtn;
 }
-- (void)logout:(UIButton *)btn
+- (void)rightBtnAction:(UIButton *)btn
 {
-    [shareAppDelegate showLoginViewController];
+    NSString *type = self.rightBtnConfigDict[@"type"];
+    if ([type isEqualToString:@"logout"]) {
+        [shareAppDelegate showLoginViewController];
+    }else if([type isEqualToString:@"jsfunc"]){
+        [self.jsBridge callHandler:self.rightBtnConfigDict[@"funcName"] data:@{@"msg":@"call JS"} responseCallback:^(id responseData) {
+            NSLog(@"回调成功");
+        }];
+    }else{
+        
+    }
+    
 }
 - (void)popViewController:(UIButton *)btn
 {
@@ -152,9 +163,8 @@
     if ([self.navigationController.viewControllers count] > 1) {
         [self.customNavigationView addSubview:self.leftBtn];
     }
-    if (self.hiddenRightBtn == NO) {
-        [self.customNavigationView addSubview:self.rightBtn];
-    }
+    
+    [self.customNavigationView addSubview:self.rightBtn];
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -182,6 +192,17 @@
         self.h5WebView.frame = CGRectMake(0, 64, kScreenWidth, kScreenHeight - 64);
     }
     
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
+    [super viewDidAppear:animated];
+    //移除所有的通知
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+}
+- (void)addSubviews
+{
+    [self.view addSubview:self.h5WebView];
 }
 
 #pragma mark -load Web view
@@ -213,13 +234,13 @@
         if (responseCallback) {
             // 反馈给JS
             NSUserDefaults *userdefault = [NSUserDefaults standardUserDefaults];
-            NSString *userid = [NSString stringWithFormat:@"%@", [userdefault valueForKey:@"userid"]];
-            responseCallback(@{@"userid": userid});
+            NSDictionary *currentUserInfo = [userdefault valueForKey:@"currentUserInfo"];
+            responseCallback(currentUserInfo);
         }
     }];
     
     [self.jsBridge registerHandler:@"openUrl" handler:^(id data, WVJBResponseCallback responseCallback) {
-        NSLog(@"js call getUserIdFromObjC, data from js is %@", data);
+        NSLog(@"js call openUrl, data from js is %@", data);
         //开新页面
         [weakSelf jsCallOBJCOpenUrl:data];
         if (responseCallback) {
@@ -229,7 +250,7 @@
     }];
     
     [self.jsBridge registerHandler:@"alert" handler:^(id data, WVJBResponseCallback responseCallback) {
-        NSLog(@"js call getUserIdFromObjC, data from js is %@", data);
+        NSLog(@"js call alert, data from js is %@", data);
         //开新页面
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提示" message:data[@"msg"] delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
         [alert show];
@@ -240,24 +261,68 @@
     }];
     
     [self.jsBridge registerHandler:@"popToRoot" handler:^(id data, WVJBResponseCallback responseCallback) {
-        NSLog(@"js call getUserIdFromObjC, data from js is %@", data);
+        NSLog(@"js call popToRoot, data from js is %@", data);
+        //开新页面
+        [weakSelf.navigationController popToRootViewControllerAnimated:YES];
+        if (responseCallback) {
+            // 反馈给JS
+            responseCallback(@{@"cb": @"OK"});
+        }
+    }];
+    
+    [self.jsBridge registerHandler:@"addRightBtn" handler:^(id data, WVJBResponseCallback responseCallback) {
+        NSLog(@"js call addRightBtn, data from js is %@", data);
+        //开新页面
+        weakSelf.rightBtnConfig = (NSDictionary *)data;
+        if (responseCallback) {
+            // 反馈给JS
+            responseCallback(@{@"cb": @"OK"});
+        }
+    }];
+    
+    [self.jsBridge registerHandler:@"regNotifiaction" handler:^(id data, WVJBResponseCallback responseCallback) {
+        NSLog(@"js call regNotifiaction, data from js is %@", data);
+        [weakSelf regNotifiaction:(NSDictionary *)data];
         //开新页面
         if (responseCallback) {
             // 反馈给JS
-            [weakSelf.navigationController popToRootViewControllerAnimated:YES];
-            responseCallback(@{@"cb": @"OK"});
+            responseCallback(@{@"ret": @"OK"});
+        }
+    }];
+    
+    [self.jsBridge registerHandler:@"postNotifiaction" handler:^(id data, WVJBResponseCallback responseCallback) {
+        NSLog(@"js call postNotifiaction, data from js is %@", data);
+        //开新页面
+        [weakSelf postNotifiaction:(NSDictionary *)data];
+        if (responseCallback) {
+            // 反馈给JS
+            responseCallback(@{@"ret": @"OK"});
         }
     }];
 }
 
-- (void)addSubviews
+#pragma mark - NSNotification
+- (void)regNotifiaction:(NSDictionary *)notiConfig
 {
-    [self.view addSubview:self.h5WebView];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(notifactionAction:) name:notiConfig[@"notiName"] object:nil];
 }
+- (void)notifactionAction:(NSNotification *)notification
+{
+    NSDictionary *notiArgv = notification.userInfo;
+    [self.jsBridge callHandler:notiArgv[@"notiRespFuncName"] data:@{@"msg":@"call JS"} responseCallback:^(id responseData) {
+        NSLog(@"回调成功");
+    }];
+}
+- (void)postNotifiaction:(NSDictionary *)postConfig
+{
+    [[NSNotificationCenter defaultCenter] postNotificationName:postConfig[@"notiName"] object:nil userInfo:postConfig];
+}
+
 
 - (void)jsCallOBJCOpenUrl:(NSDictionary *)data
 {
-    UYUWebViewController *newVC = [[UYUWebViewController alloc] initWithUrlString:data[@"url"] rightHidden:YES];
+    
+    UYUWebViewController *newVC = [[UYUWebViewController alloc] initWithUrlString:data[@"url"]];
     if ([data[@"pullDown"] isEqualToString:@"1"]) {
         newVC.canPullDownRefresh = YES;
     }
@@ -267,6 +332,15 @@
     newVC.hidesBottomBarWhenPushed = YES;
     [self.navigationController pushViewController:newVC animated:YES];
 }
+
+#pragma mark - set right UIButton
+- (void)setRightBtnConfig:(NSDictionary *)config
+{
+    _rightBtnConfigDict = config;
+    self.rightBtn.hidden = NO;
+    [self.rightBtn setTitle:config[@"title"] forState:UIControlStateNormal];
+}
+
 #pragma mark - NavigationController
 
 - (void)setupNavigationController {
@@ -277,6 +351,11 @@
     }
 }
 
+//- (void)viewWillAppear:(BOOL)animated
+//{
+//    [super viewWillAppear:animated];
+//    [self setupNavigationController];
+//}
 #pragma mark -- Pop Gesture
 
 - (void)navigationCanDragBack:(BOOL)bCanDragBack {
@@ -298,13 +377,16 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
+#pragma mark - UIWebViewDelegate
 -(void)webViewDidFinishLoad:(UIWebView *)webView
 {
     self.titleLabel.text = [self.h5WebView stringByEvaluatingJavaScriptFromString:@"document.title"];
 }
 
-
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(NSError *)error
+{
+    //添加加载错误的页面
+}
 #pragma mark - MJRefresh
 - (void)addWebViewPullDownRefresh
 {

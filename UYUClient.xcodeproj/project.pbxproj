@@ -20,11 +20,13 @@
 		04C3AC051E7BB88400EFA752 /* WebViewJavascriptBridgeBase.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C3AC001E7BB88400EFA752 /* WebViewJavascriptBridgeBase.m */; };
 		04C3AC061E7BB88400EFA752 /* WKWebViewJavascriptBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 04C3AC021E7BB88400EFA752 /* WKWebViewJavascriptBridge.m */; };
 		04C3AC0A1E7CCE5A00EFA752 /* JavaScriptCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 04C3AC091E7CCE5A00EFA752 /* JavaScriptCore.framework */; };
+		04D0DE951E94D2A2006CFE08 /* NSString+Tools.m in Sources */ = {isa = PBXBuildFile; fileRef = 04D0DE941E94D2A2006CFE08 /* NSString+Tools.m */; };
 		04E8574B1E7931780066A054 /* UYULoginViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 04E8574A1E7931780066A054 /* UYULoginViewController.m */; };
 		E5F7BC7D8A5BBDD31D791BC8 /* libPods-UYUClient.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E2E3841BAD54C31498604C2C /* libPods-UYUClient.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		040EA22C1E8E4F4000979995 /* UYUWebDefine.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = UYUWebDefine.h; sourceTree = "<group>"; };
 		042563A11E73965100FC18C4 /* UYUClient.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UYUClient.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		042563A51E73965100FC18C4 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		042563A71E73965100FC18C4 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -52,6 +54,8 @@
 		04C3AC011E7BB88400EFA752 /* WKWebViewJavascriptBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WKWebViewJavascriptBridge.h; sourceTree = "<group>"; };
 		04C3AC021E7BB88400EFA752 /* WKWebViewJavascriptBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WKWebViewJavascriptBridge.m; sourceTree = "<group>"; };
 		04C3AC091E7CCE5A00EFA752 /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		04D0DE931E94D2A2006CFE08 /* NSString+Tools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+Tools.h"; sourceTree = "<group>"; };
+		04D0DE941E94D2A2006CFE08 /* NSString+Tools.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSString+Tools.m"; sourceTree = "<group>"; };
 		04E857491E7931780066A054 /* UYULoginViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UYULoginViewController.h; sourceTree = "<group>"; };
 		04E8574A1E7931780066A054 /* UYULoginViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = UYULoginViewController.m; sourceTree = "<group>"; };
 		1730BF9B5C75AFD8AFB71602 /* Pods-UYUClient.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UYUClient.release.xcconfig"; path = "Pods/Target Support Files/Pods-UYUClient/Pods-UYUClient.release.xcconfig"; sourceTree = "<group>"; };
@@ -72,6 +76,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		040EA22B1E8E4F1500979995 /* other */ = {
+			isa = PBXGroup;
+			children = (
+				040EA22C1E8E4F4000979995 /* UYUWebDefine.h */,
+			);
+			path = other;
+			sourceTree = "<group>";
+		};
 		042563981E73965100FC18C4 = {
 			isa = PBXGroup;
 			children = (
@@ -137,6 +149,7 @@
 		044FFA901E77F57200856635 /* WebVC */ = {
 			isa = PBXGroup;
 			children = (
+				040EA22B1E8E4F1500979995 /* other */,
 				044FFAA21E77F57200856635 /* model */,
 				044FFAA31E77F57200856635 /* vc */,
 				044FFAA61E77F57200856635 /* view */,
@@ -170,6 +183,7 @@
 		04C3ABE21E7B8AFC00EFA752 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				04D0DE921E94D27E006CFE08 /* NSKit */,
 				04C3ABFA1E7BB88400EFA752 /* WebViewJavascriptBridge */,
 				04C3ABE51E7B8B8B00EFA752 /* UIKit */,
 				04C3ABE31E7B8AFC00EFA752 /* Macro */,
@@ -209,6 +223,15 @@
 				04C3AC021E7BB88400EFA752 /* WKWebViewJavascriptBridge.m */,
 			);
 			path = WebViewJavascriptBridge;
+			sourceTree = "<group>";
+		};
+		04D0DE921E94D27E006CFE08 /* NSKit */ = {
+			isa = PBXGroup;
+			children = (
+				04D0DE931E94D2A2006CFE08 /* NSString+Tools.h */,
+				04D0DE941E94D2A2006CFE08 /* NSString+Tools.m */,
+			);
+			path = NSKit;
 			sourceTree = "<group>";
 		};
 		04E857401E7928F00066A054 /* Login */ = {
@@ -272,7 +295,7 @@
 				TargetAttributes = {
 					042563A01E73965100FC18C4 = {
 						CreatedOnToolsVersion = 8.2.1;
-						DevelopmentTeam = 6XX8659PN2;
+						DevelopmentTeam = 25ST43EFPZ;
 						ProvisioningStyle = Manual;
 					};
 				};
@@ -367,6 +390,7 @@
 				04C3AC061E7BB88400EFA752 /* WKWebViewJavascriptBridge.m in Sources */,
 				04C3AC051E7BB88400EFA752 /* WebViewJavascriptBridgeBase.m in Sources */,
 				04C3ABE81E7B8B8B00EFA752 /* UYUColor.m in Sources */,
+				04D0DE951E94D2A2006CFE08 /* NSString+Tools.m in Sources */,
 				04C3AC041E7BB88400EFA752 /* WebViewJavascriptBridge_JS.m in Sources */,
 				04E8574B1E7931780066A054 /* UYULoginViewController.m in Sources */,
 				042563A61E73965100FC18C4 /* main.m in Sources */,
@@ -481,17 +505,17 @@
 			baseConfigurationReference = 3A30C14430F141C86EB52058 /* Pods-UYUClient.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer: 许 宗磊 (W23WH84938)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: 许 宗磊 (W23WH84938)";
-				DEVELOPMENT_TEAM = 6XX8659PN2;
+				CODE_SIGN_IDENTITY = "iPhone Distribution: UYU Science&Technology Co.,Ltd. (25ST43EFPZ)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: UYU Science&Technology Co.,Ltd. (25ST43EFPZ)";
+				DEVELOPMENT_TEAM = 25ST43EFPZ;
 				GCC_PREFIX_HEADER = /Users/mac/Desktop/lan_uyu/UYU_iOS/UYUClient/UYUPrefixHeader.pch;
 				INFOPLIST_FILE = UYUClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.qfpay.qybent;
+				PRODUCT_BUNDLE_IDENTIFIER = com.uyu.storesys;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "c6d6449e-7d46-4281-b624-cebc328f5144";
-				PROVISIONING_PROFILE_SPECIFIER = qyb_cd_dev_kkkk;
+				PROVISIONING_PROFILE = "8c7217c0-d8e0-4f18-9067-3b420d9ba1d2";
+				PROVISIONING_PROFILE_SPECIFIER = uyuStoreSysPro;
 			};
 			name = Debug;
 		};
@@ -500,17 +524,17 @@
 			baseConfigurationReference = 1730BF9B5C75AFD8AFB71602 /* Pods-UYUClient.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer: 许 宗磊 (W23WH84938)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: 许 宗磊 (W23WH84938)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: UYU Science&Technology Co.,Ltd. (25ST43EFPZ)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: UYU Science&Technology Co.,Ltd. (25ST43EFPZ)";
 				DEVELOPMENT_TEAM = 25ST43EFPZ;
 				GCC_PREFIX_HEADER = /Users/mac/Desktop/lan_uyu/UYU_iOS/UYUClient/UYUPrefixHeader.pch;
 				INFOPLIST_FILE = UYUClient/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = com.qfpay.qybent;
+				PRODUCT_BUNDLE_IDENTIFIER = com.uyu.storesys;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "c6d6449e-7d46-4281-b624-cebc328f5144";
-				PROVISIONING_PROFILE_SPECIFIER = qyb_cd_dev_kkkk;
+				PROVISIONING_PROFILE = "8c7217c0-d8e0-4f18-9067-3b420d9ba1d2";
+				PROVISIONING_PROFILE_SPECIFIER = uyuStoreSysPro;
 			};
 			name = Release;
 		};

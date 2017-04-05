@@ -13,6 +13,6 @@
 @property (nonatomic, assign) BOOL canPullDownRefresh;
 @property (nonatomic, assign) BOOL canPullUpRefresh;
 
-- (instancetype)initWithUrlString:(NSString *)url rightHidden:(BOOL)hidden;
+- (instancetype)initWithUrlString:(NSString *)url;
 
 @end
