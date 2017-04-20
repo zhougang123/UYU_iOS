@@ -134,4 +134,6 @@
 
 #define kCommonCornerRadius   3.0f   // 圆角
 
+
+#define kAutoLoginNotification @"kAutoLoginNotification"
 #endif

@@ -8,6 +8,8 @@
 
 #import "UYULoginViewController.h"
 
+#import "UYUWebViewController.h"
+
 #import "Macro.h"
 
 #import "UYUColor.h"
@@ -22,16 +24,35 @@
 
 #import "NSString+Tools.h"
 
+#import "UYUHttpHandler.h"
+
+#import "UIDevice+Tools.h"
+
+#import "UYUUserInfo.h"
+
 @interface UYULoginViewController ()
 @property (nonatomic, strong) UIImageView *uyuImageView;
 @property (nonatomic, strong) UITextField *phoneTF;
 @property (nonatomic, strong) UITextField *passwordTF;
 @property (nonatomic, strong) UIButton    *loginBtn;
 @property (nonatomic, assign) BOOL        keyboardIsHidden;
-
+@property (nonatomic, strong) NSString *token;
+@property (nonatomic, strong) UILabel *versionLab;
+@property (nonatomic, strong) UIButton    *forgetPwdBtn;
+@property (nonatomic, strong) UIButton    *registeBtn;
 @end
 
 @implementation UYULoginViewController
+
+- (UILabel *)versionLab{
+    if (_versionLab == nil) {
+        _versionLab = [[UILabel alloc] init];
+        _versionLab.font = [UIFont systemFontOfSize:13];
+        _versionLab.textColor = [UIColor lightGrayColor];
+        _versionLab.textAlignment = NSTextAlignmentCenter;
+    }
+    return _versionLab;
+}
 -(UITextField *)phoneTF
 {
     if (_phoneTF == nil) {
@@ -46,8 +67,8 @@
         _phoneTF.leftView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 8, 0)];
         _phoneTF.leftViewMode = UITextFieldViewModeAlways;
         _phoneTF.tag = 1000;
-        _phoneTF.text = @"13893541383";
-        
+//        _phoneTF.text = @"19212341000";
+        _phoneTF.text = @"13475481254";
     }
     return _phoneTF;
 }
@@ -67,7 +88,8 @@
         _passwordTF.leftViewMode = UITextFieldViewModeAlways;
         _passwordTF.tag = 1001;
         _passwordTF.secureTextEntry = YES;
-        _passwordTF.text = @"541383";
+//        _passwordTF.text = @"341000";
+//        _passwordTF.text = @"123456";
     }
     return _passwordTF;
 }
@@ -95,6 +117,36 @@
     }
     return _loginBtn;
 }
+
+- (UIButton *)forgetPwdBtn
+{
+    if (_forgetPwdBtn == nil) {
+        _forgetPwdBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        _forgetPwdBtn.backgroundColor = [UIColor whiteColor];
+        _forgetPwdBtn.titleLabel.font = [UIFont systemFontOfSize:13];
+        _forgetPwdBtn.layer.cornerRadius = 3;
+        _forgetPwdBtn.layer.masksToBounds = YES;
+        [_forgetPwdBtn setTitleColor:[UYUColor uyuGreenColor] forState:UIControlStateNormal];
+        [_forgetPwdBtn setTitle:@"忘记密码" forState:UIControlStateNormal];
+        
+    }
+    return _forgetPwdBtn;
+}
+
+- (UIButton *)registeBtn
+{
+    if (_registeBtn == nil) {
+        _registeBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+        _registeBtn.backgroundColor = [UYUColor uyuGreenColor];
+        _registeBtn.titleLabel.font = [UIFont systemFontOfSize:15];
+        _registeBtn.layer.cornerRadius = 3;
+        _registeBtn.layer.masksToBounds = YES;
+        [_registeBtn setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        [_registeBtn setTitle:@"注 册" forState:UIControlStateNormal];
+        
+    }
+    return _registeBtn;
+}
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
@@ -104,19 +156,35 @@
     [self setupNotifications];
     self.keyboardIsHidden = YES;
     
+    
+    self.versionLab.text = [NSString stringWithFormat:@"v %@", AppVersionShort];
+    
 }
 
+
+- (void)viewWillAppear:(BOOL)animated{
+    [super viewWillAppear:animated];
+    [[UYUUserInfo shared] clearUserInfo];
+    [self clearLocalCache];
+}
 - (void)addSubviews{
     [self.view addSubview:self.uyuImageView];
     [self.view addSubview:self.phoneTF];
     [self.view addSubview:self.passwordTF];
     [self.view addSubview:self.loginBtn];
+    [self.view addSubview:self.registeBtn];
+    [self.view addSubview:self.forgetPwdBtn];
+    [self.view addSubview:self.versionLab];
 }
 - (void)layoutSubviews{
     self.uyuImageView.frame = CGRectMake((kScreenWidth - AdaptWidth(100))/2.0, AdaptWidth(88), AdaptWidth(100), AdaptWidth(100));
-    self.phoneTF.frame = CGRectMake(AdaptWidth(30), kScreenHeight/2.0, kScreenWidth - AdaptWidth(30)*2, AdaptWidth(40));
-    self.passwordTF.frame = CGRectMake(AdaptWidth(30), CGRectGetMaxY(_phoneTF.frame)+15, kScreenWidth - AdaptWidth(30)*2, AdaptWidth(40));
-    self.loginBtn.frame = CGRectMake(AdaptWidth(30), CGRectGetMaxY(_passwordTF.frame)+15, kScreenWidth - AdaptWidth(30)*2, AdaptWidth(40));
+    self.phoneTF.frame = CGRectMake(AdaptWidth(30), kScreenHeight/2.0-AdaptWidth(40), kScreenWidth - AdaptWidth(30)*2, AdaptWidth(40));
+    self.passwordTF.frame = CGRectMake(_phoneTF.left, _phoneTF.bottom+12, _phoneTF.width, _phoneTF.height);
+    self.loginBtn.frame = CGRectMake(_phoneTF.left, _passwordTF.bottom+12, _phoneTF.width, _phoneTF.height);
+    self.registeBtn.frame = CGRectMake(_phoneTF.left, _loginBtn.bottom+12, _phoneTF.width, _phoneTF.height);
+    self.forgetPwdBtn.frame = CGRectMake(_phoneTF.left, _registeBtn.bottom+10, _phoneTF.width, _phoneTF.height);
+    self.versionLab.frame = CGRectMake(0, kScreenHeight - AdaptWidth(40), kScreenWidth, AdaptWidth(40));
+    
 }
 
 - (void)addActions
@@ -124,6 +192,8 @@
     [self.phoneTF addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
     [self.passwordTF addTarget:self action:@selector(textFieldChanged:) forControlEvents:UIControlEventEditingChanged];
     [self.loginBtn addTarget:self action:@selector(login:) forControlEvents:UIControlEventTouchUpInside];
+    [self.forgetPwdBtn addTarget:self action:@selector(forgetPwdAction:) forControlEvents:UIControlEventTouchUpInside];
+    [self.registeBtn addTarget:self action:@selector(registeAction:) forControlEvents:UIControlEventTouchUpInside];
     [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapedView:)]];
 }
 - (void)textFieldChanged:(UITextField *)tf
@@ -140,7 +210,18 @@
         }
     }
 }
-
+- (void)registeAction:(UIButton *)btn
+{
+    NSString *urlStr = [NSString stringWithFormat:@"%@%@", kCDBaseUrl, registerUrl];
+    UYUWebViewController *newVC = [[UYUWebViewController alloc] initWithUrlString:urlStr];
+    [self.navigationController pushViewController:newVC animated:YES];
+}
+- (void)forgetPwdAction:(UIButton *)btn
+{
+    NSString *urlStr = [NSString stringWithFormat:@"%@%@", kCDBaseUrl, forgetPwdUrl];
+    UYUWebViewController *newVC = [[UYUWebViewController alloc] initWithUrlString:urlStr];
+    [self.navigationController pushViewController:newVC animated:YES];
+}
 - (void)login:(UIButton *)btn
 {
     NSString *phone = self.phoneTF.text;
@@ -157,55 +238,90 @@
         [SVProgressHUD showErrorWithStatus:@"请输入6位以上的密码"];
         return;
     }
-   
 
-    [self clearLocalCache];
     
-    AFHTTPSessionManager *httpManage = [AFHTTPSessionManager manager];
-    httpManage.securityPolicy = [AFSecurityPolicy policyWithPinningMode:AFSSLPinningModeNone];
-    httpManage.requestSerializer = [AFHTTPRequestSerializer serializer];
-    httpManage.responseSerializer = [AFHTTPResponseSerializer serializer];
-    NSDictionary *param = @{@"mobile": phone, @"password": [password handleWithMD5].lowercaseString};
+    [[UYUHttpHandler shareInstance] clearCookie];
     
-    NSString *urlString = [baseUrl stringByAppendingString:@"/store/v1/api/login"];
+    [SVProgressHUD show];
     
-    [httpManage POST:urlString parameters:param progress:^(NSProgress * _Nonnull uploadProgress) {
-        
-    } success:^(NSURLSessionDataTask * _Nonnull task, id  _Nullable responseObject) {
-        
-        NSHTTPURLResponse *respone = (NSHTTPURLResponse *)task.response;
-        
-        NSDictionary *responeHeaderDict = respone.allHeaderFields;
-        
-        NSString *cookie = responeHeaderDict[@"Set-Cookie"];
-        
-        NSLog(@"cookie %@", cookie);
-        
-        NSError *praseError = nil;
-        NSData *jsonData = (NSData *)responseObject;
-        NSDictionary *jsonDict = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers | NSJSONReadingMutableLeaves | NSJSONReadingAllowFragments  error:&praseError];
-        if ([jsonDict[@"respcd"] isEqualToString:@"0000"]) {
-            NSUserDefaults *userdefault = [NSUserDefaults standardUserDefaults];
-            NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
-            [userInfo setValue:[jsonDict[@"data"][@"userid"] description] forKey:@"userid"];
-            [userInfo setValue:[jsonDict[@"data"][@"is_prepayment"] description] forKey:@"is_prepayment"];
-            [userdefault setValue:userInfo forKey:@"currentUserInfo"];
-            [userdefault synchronize];
-            [shareAppDelegate showTabbarViewController];
+    [self cdLoginPhone:phone password:password];
+}
+
+- (void)cdLoginPhone:(NSString *)phone password:(NSString *)pwd
+{
+    [[UYUHttpHandler shareInstance] cdLoginWithPhone:phone password:pwd success:^(NSDictionary *responseDictionary) {
+        if ([responseDictionary[@"respcd"] isEqualToString:@"0000"]) {
+
+            //缓存返回的数据
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [SVProgressHUD dismiss];
+                [shareAppDelegate showTabbarViewController];
+            });
         }else{
             dispatch_async(dispatch_get_main_queue(), ^{
-                [SVProgressHUD showErrorWithStatus:jsonDict[@"resperr"]];
+                [SVProgressHUD showErrorWithStatus:responseDictionary[@"resperr"]];
             });
         }
         
-    } failure:^(NSURLSessionDataTask * _Nullable task, NSError * _Nonnull error) {
-        [SVProgressHUD showErrorWithStatus:@"登录失败, 请稍后重试"];
-        NSLog(@"失败 %@", error);
+    } failure:^(NSDictionary *errorDictionary) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD showErrorWithStatus:errorDictionary[kHttpErrorMsg]];
+        });
     }];
-    
-    
 }
 
+#pragma mark -
+#pragma mark 测试
+- (void)existWithPhone:(NSString *)phone password:(NSString *)pwd
+{
+    [[UYUHttpHandler shareInstance] existWithPhone:phone success:^(NSDictionary *responseDictionary) {
+        NSString *respCode = [responseDictionary[@"code"] description];
+        if ([respCode isEqualToString:@"0"]) {
+            //手机号存在，下一步登录
+//            [self optometristPhone:phone password:pwd];
+            
+        }else{
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [SVProgressHUD showErrorWithStatus:responseDictionary[@"message"]];
+            });
+        }
+    } failure:^(NSDictionary *errorDictionary) {
+        
+    }];
+}
+
+
+- (void)optometristPhone:(NSString *)phone password:(NSString *)pwd
+{
+    [[UYUHttpHandler shareInstance] optometristWithPhone:phone password:pwd success:^(NSDictionary *responseDictionary) {
+        [self getAccessTokenWithUserid:responseDictionary[@"id"] code:responseDictionary[@"code"]];
+    } failure:^(NSDictionary *errorDictionary) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD showErrorWithStatus:errorDictionary[kHttpErrorMsg]];
+        });
+    }];
+}
+
+- (void)getAccessTokenWithUserid:(NSString *)userid code:(NSString *)code{
+    
+    NSString *phoneType = [[UIDevice currentDevice] iphoneType];
+    NSString *sysVersion = [[UIDevice currentDevice] systemVersion];
+//    NSString *phone = self.phoneTF.text;
+//    NSString *password = self.passwordTF.text;
+    [[UYUHttpHandler shareInstance] getAccessToken:userid
+                                        deviceType:[phoneType stringByAppendingString:sysVersion]
+                                              code:code
+                                           success:^(NSDictionary *responseDictionary) {
+                                               
+                                               
+                                    
+//                                               [self cdLoginPhone:phone password:password];
+    } failure:^(NSDictionary *errorDictionary) {
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [SVProgressHUD showErrorWithStatus:errorDictionary[kHttpErrorMsg]];
+        });
+    }];
+}
 
 - (void)tapedView:(UITapGestureRecognizer *)tap
 {
@@ -267,10 +383,11 @@
 #pragma mark - 清空cache
 - (void)clearLocalCache
 {
+    NSHTTPCookieStorage *cookieJar = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    NSArray *cookieArray = [NSArray arrayWithArray:[cookieJar cookies]];
+    for (NSHTTPCookie *obj in cookieArray) {
+        [cookieJar deleteCookie:obj];
+    }
     [[NSURLCache sharedURLCache] removeAllCachedResponses];
-    NSURLCache * cache = [NSURLCache sharedURLCache];
-    [cache removeAllCachedResponses];
-    [cache setDiskCapacity:0];
-    [cache setMemoryCapacity:0];
 }
 @end

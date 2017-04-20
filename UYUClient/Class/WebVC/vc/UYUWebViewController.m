@@ -13,7 +13,12 @@
 #import "UIView+YSKit.h"
 #import "UYUColor.h"
 #import "MJRefresh.h"
-
+#import "UYUUserHistoryViewController.h"
+#import "UYUCreateViewController.h"
+#import "UYUPresDetialViewController.h"
+#import "UYUUserInfo.h"
+#import "CYTools.h"
+#import "NSString+Tools.h"
 
 @interface UYUWebViewController ()<UIGestureRecognizerDelegate, UIWebViewDelegate>
 
@@ -75,6 +80,7 @@
 {
     if (_h5WebView == nil) {
         _h5WebView = [[UIWebView alloc] initWithFrame:CGRectMake(0, 64, kScreenWidth, kScreenHeight - 64 - 52)];
+        _h5WebView.delegate = self;
     }
     return _h5WebView;
 }
@@ -141,6 +147,7 @@
     NSString *type = self.rightBtnConfigDict[@"type"];
     if ([type isEqualToString:@"logout"]) {
         [shareAppDelegate showLoginViewController];
+        
     }else if([type isEqualToString:@"jsfunc"]){
         [self.jsBridge callHandler:self.rightBtnConfigDict[@"funcName"] data:@{@"msg":@"call JS"} responseCallback:^(id responseData) {
             NSLog(@"回调成功");
@@ -209,7 +216,8 @@
 - (void)loadRequestUrl
 {
     NSURL *url = [[NSURL alloc] initWithString:self.urlString];
-    [self.h5WebView loadRequest:[[NSURLRequest alloc] initWithURL:url]];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url cachePolicy:NSURLRequestReloadIgnoringLocalCacheData timeoutInterval:60];
+    [self.h5WebView loadRequest:request];
 }
 
 - (void)loadLocal
@@ -233,9 +241,35 @@
         NSLog(@"js call getUserIdFromObjC, data from js is %@", data);
         if (responseCallback) {
             // 反馈给JS
-            NSUserDefaults *userdefault = [NSUserDefaults standardUserDefaults];
-            NSDictionary *currentUserInfo = [userdefault valueForKey:@"currentUserInfo"];
-            responseCallback(currentUserInfo);
+            NSMutableDictionary *userInfo = [NSMutableDictionary dictionary];
+            //内存
+            if ([UYUUserInfo shared].storeId.length == 0 || [UYUUserInfo shared].isPrepayment.length == 0) {
+                NSUserDefaults *userdefault = [NSUserDefaults standardUserDefaults];
+                userInfo = [userdefault objectForKey:@"currentUserInfo"];
+                [UYUUserInfo shared].storeId = [userInfo[@"userid"] description];
+                [UYUUserInfo shared].cdNewUserId = [userInfo[@"login_id"] description];
+                [UYUUserInfo shared].uyuOldUserId = [userInfo[@"login_old_id"] description];
+                [UYUUserInfo shared].isPrepayment = [userInfo[@"is_prepayment"] description];
+                [UYUUserInfo shared].sessionId = [userInfo[@"sessionid"] description];
+                [UYUUserInfo shared].cookieDict = userInfo[@"cookieDict"];
+                [UYUUserInfo shared].mobile = userInfo[@"mobile"];
+                [UYUUserInfo shared].password = userInfo[@"password"];
+                [UYUUserInfo shared].cookie = [NSHTTPCookie cookieWithProperties:userInfo[@"cookieDict"]];
+            }
+
+            if ([UYUUserInfo shared].storeId.length > 0 && [UYUUserInfo shared].isPrepayment.length > 0) {
+
+                [userInfo setValue:[UYUUserInfo shared].storeId forKey:@"userid"];
+                [userInfo setValue:[UYUUserInfo shared].cdNewUserId forKey:@"login_id"];
+                [userInfo setValue:[UYUUserInfo shared].uyuOldUserId forKey:@"login_old_id"];
+                [userInfo setValue:[UYUUserInfo shared].isPrepayment forKey:@"is_prepayment"];
+                [userInfo setValue:[UYUUserInfo shared].sessionId forKey:@"sessionid"];
+                
+                responseCallback(userInfo);
+            }else{
+                //重新登录
+                [[NSNotificationCenter defaultCenter] postNotificationName:kAutoLoginNotification object:nil];
+            }
         }
     }];
     
@@ -245,18 +279,58 @@
         [weakSelf jsCallOBJCOpenUrl:data];
         if (responseCallback) {
             // 反馈给JS
-            responseCallback(@{@"cb": @"OK"});
+            responseCallback(@{@"ret": @"OK"});
         }
     }];
     
-    [self.jsBridge registerHandler:@"alert" handler:^(id data, WVJBResponseCallback responseCallback) {
+    [self.jsBridge registerHandler:@"uyuAlert" handler:^(id data, WVJBResponseCallback responseCallback) {
         NSLog(@"js call alert, data from js is %@", data);
         //开新页面
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"提示" message:data[@"msg"] delegate:nil cancelButtonTitle:@"确定" otherButtonTitles: nil];
         [alert show];
         if (responseCallback) {
             // 反馈给JS
-            responseCallback(@{@"cb": @"OK"});
+            responseCallback(@{@"ret": @"OK"});
+        }
+    }];
+    
+//    [self.jsBridge registerHandler:@"md5Password" handler:^(id data, WVJBResponseCallback responseCallback) {
+//        NSLog(@"js call encPassword, data from js is %@", data);
+//        //开新页面
+//        if (responseCallback && data) {
+//            // 反馈给JS
+//            NSDictionary *callDict = (NSDictionary *)data;
+//            NSString *password = callDict[@"password"];
+//            responseCallback(@{@"md5_password": [password handleWithMD5]});
+//        }
+//    }];
+    
+    
+    [self.jsBridge registerHandler:@"popToRootVC" handler:^(id data, WVJBResponseCallback responseCallback) {
+        NSLog(@"js call encPassword, data from js is %@", data);
+        //开新页面
+        if (responseCallback && data) {
+            [weakSelf.navigationController popViewControllerAnimated:YES];
+            responseCallback(@{@"ret": @"OK"});
+        }
+    }];
+    
+    [self.jsBridge registerHandler:@"uyuLog" handler:^(id data, WVJBResponseCallback responseCallback) {
+        NSLog(@"js call uyuLog, data from js is %@", data);
+        //开新页面
+        if (responseCallback) {
+            // 反馈给JS
+            responseCallback(@{@"ret": @"OK"});
+        }
+    }];
+    
+    [self.jsBridge registerHandler:@"getDeviceInfo" handler:^(id data, WVJBResponseCallback responseCallback) {
+        NSLog(@"js call getDeviceInfo, data from js is %@", data);
+        //开新页面
+        if (responseCallback) {
+            // 反馈给JS
+            NSDictionary *devInfo = [CYTools deviceInfo];
+            responseCallback(devInfo);
         }
     }];
     
@@ -266,7 +340,7 @@
         [weakSelf.navigationController popToRootViewControllerAnimated:YES];
         if (responseCallback) {
             // 反馈给JS
-            responseCallback(@{@"cb": @"OK"});
+            responseCallback(@{@"ret": @"OK"});
         }
     }];
     
@@ -276,7 +350,7 @@
         weakSelf.rightBtnConfig = (NSDictionary *)data;
         if (responseCallback) {
             // 反馈给JS
-            responseCallback(@{@"cb": @"OK"});
+            responseCallback(@{@"ret": @"OK"});
         }
     }];
     
@@ -299,6 +373,7 @@
             responseCallback(@{@"ret": @"OK"});
         }
     }];
+    
 }
 
 #pragma mark - NSNotification
@@ -321,16 +396,48 @@
 
 - (void)jsCallOBJCOpenUrl:(NSDictionary *)data
 {
-    
-    UYUWebViewController *newVC = [[UYUWebViewController alloc] initWithUrlString:data[@"url"]];
-    if ([data[@"pullDown"] isEqualToString:@"1"]) {
-        newVC.canPullDownRefresh = YES;
-    }
-    if ([data[@"pullUp"] isEqualToString:@"1"]) {
-        newVC.canPullUpRefresh = YES;
-    }
-    newVC.hidesBottomBarWhenPushed = YES;
-    [self.navigationController pushViewController:newVC animated:YES];
+    NSString *urlStr = data[@"url"];
+    __weak typeof(self) weakSelf = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if ([urlStr hasPrefix:@"http"]) {
+            UYUWebViewController *newVC = [[UYUWebViewController alloc] initWithUrlString:urlStr];
+            if ([data[@"pullDown"] isEqualToString:@"1"]) {
+                newVC.canPullDownRefresh = YES;
+            }
+            if ([data[@"pullUp"] isEqualToString:@"1"]) {
+                newVC.canPullUpRefresh = YES;
+            }
+            newVC.hidesBottomBarWhenPushed = YES;
+            
+            [weakSelf.navigationController pushViewController:newVC animated:YES];
+            
+        } else if([urlStr hasPrefix:@"uyu"]){
+            if ([urlStr hasSuffix:@"create_user"]) {
+                
+                UYUCreateViewController *vc = [[UYUCreateViewController alloc] init];
+                [vc setMiddleNaviWithTitle:@"新建客户"];
+                [vc setLeftNaviItemAction:^(UIButton *obj) {
+                    [weakSelf.navigationController popViewControllerAnimated:YES];
+                }];
+                vc.hidesBottomBarWhenPushed = YES;
+                [weakSelf.navigationController pushViewController:vc animated:YES];
+                
+            }else if ([urlStr hasSuffix:@"user_history"]){
+                UYUUserHistoryViewController *vc = [[UYUUserHistoryViewController alloc] init];
+                [vc setMiddleNaviWithTitle:@"客户历史"];
+                [vc setLeftNaviItemAction:^(UIButton *obj) {
+                    [weakSelf.navigationController popViewControllerAnimated:YES];
+                }];
+                vc.hidesBottomBarWhenPushed = YES;
+                [weakSelf.navigationController pushViewController:vc animated:YES];
+                
+            }else if ([urlStr hasSuffix:@"check_record"]){
+                
+            }else if ([urlStr hasSuffix:@"search_user"]){
+                
+            }
+        }
+    });
 }
 
 #pragma mark - set right UIButton
@@ -351,11 +458,6 @@
     }
 }
 
-//- (void)viewWillAppear:(BOOL)animated
-//{
-//    [super viewWillAppear:animated];
-//    [self setupNavigationController];
-//}
 #pragma mark -- Pop Gesture
 
 - (void)navigationCanDragBack:(BOOL)bCanDragBack {
@@ -420,5 +522,24 @@
     [self.jsBridge callHandler:@"updateCurrentView" data:@{@"page":@"1"} responseCallback:^(id responseData) {
         NSLog(@"回调成功");
     }];
+}
+
+- (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType{
+    if ([UYUUserInfo shared].cookie) {
+        [self clearLocalCache];
+    }
+    NSLog(@"asdfasdf");
+    return YES;
+}
+
+- (void)clearLocalCache
+{
+    NSHTTPCookieStorage *cookieJar = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+    NSArray *cookieArray = [NSArray arrayWithArray:[cookieJar cookies]];
+    for (NSHTTPCookie *obj in cookieArray) {
+        [cookieJar deleteCookie:obj];
+    }
+    [[NSHTTPCookieStorage sharedHTTPCookieStorage] setCookie:[UYUUserInfo shared].cookie];
+
 }
 @end

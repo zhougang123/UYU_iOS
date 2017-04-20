@@ -11,4 +11,8 @@
 @interface NSString (Tools)
 
 - (NSString *)handleWithMD5;
+
+-(NSString *) encPassword;
+
+
 @end

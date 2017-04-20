@@ -7,8 +7,11 @@
 //
 
 #import "AppDelegate.h"
-
-
+#import "UYUTrainViewController.h"
+#import "UYUUserInfo.h"
+#import "UYUHttpHandler.h"
+#import "SVProgressHUD.h"
+#import "Macro.h"
 AppDelegate *shareAppDelegate;
 
 @interface AppDelegate ()
@@ -27,18 +30,19 @@ AppDelegate *shareAppDelegate;
     self.window.backgroundColor = [UIColor whiteColor];
     
     
-    UYULoginViewController *tabVC = [[UYULoginViewController alloc] init];
-    self.window.rootViewController = tabVC;
-    [self.window makeKeyAndVisible];
+    [self showLoginViewController];
     
+     [self.window makeKeyAndVisible];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(autoLogin) name:kAutoLoginNotification object:nil];
     return YES;
 }
 
 - (void)showLoginViewController;
 {
-    UYULoginViewController *tabVC = [[UYULoginViewController alloc] init];
-    self.window.rootViewController = tabVC;
+    UYULoginViewController *loginVC = [[UYULoginViewController alloc] init];
+    UINavigationController *naviVC = [[UINavigationController alloc] initWithRootViewController:loginVC];
+    self.window.rootViewController = naviVC;
 }
 - (void)showTabbarViewController
 {
@@ -46,6 +50,48 @@ AppDelegate *shareAppDelegate;
     self.window.rootViewController = tab;
 }
 
+- (void)autoLogin
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [SVProgressHUD show];
+        NSString *mobile = [UYUUserInfo shared].mobile;
+        NSString *password = [UYUUserInfo shared].password;
+        if (mobile.length == 0 || password.length == 0) {
+            NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
+            mobile = [userDefault objectForKey:@"mobile"];
+            password = [userDefault objectForKey:@"password"];
+        }
+        
+        if (mobile.length == 0 || password.length == 0){
+            [self showLoginViewController];
+        }else{
+            [[UYUHttpHandler shareInstance] cdLoginWithPhone:mobile
+                                                    password:password
+                                                     success:^(NSDictionary *responseDictionary) {
+                                                         if ([responseDictionary[@"respcd"] isEqualToString:@"0000"]) {
+                                                             
+                                                             //缓存返回的数据
+                                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                                 [SVProgressHUD dismiss];
+                                                             });
+                                                         }else{
+                                                             dispatch_async(dispatch_get_main_queue(), ^{
+                                                                 [self showLoginViewController];
+                                                             });
+                                                         }
+
+            } failure:^(NSDictionary *errorDictionary) {
+                
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [SVProgressHUD showErrorWithStatus:errorDictionary[kHttpErrorMsg]];
+                    [self showLoginViewController];
+                });
+            }];
+        }
+    });
+    
+    
+}
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.

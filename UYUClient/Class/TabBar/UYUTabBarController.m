@@ -10,6 +10,9 @@
 #import "UYUWebViewController.h"
 #import "UYUColor.h"
 #import "AppConfig.h"
+#import "UYUUserHistoryViewController.h"
+#import "UYUCreateViewController.h"
+
 
 @interface UYUTabBarController ()<UITabBarDelegate>
 
@@ -60,36 +63,63 @@
 }
 
 - (void)setupTabViewController {
-    NSArray *arrTitle = @[@"我的", @"试光师", @"设备", @"训练"];
+    NSArray *arrTitle = @[@"我的", @"视光师", @"设备", @"用户"];
     NSArray *arrImageNormal = @[@"ic_tab_mine", @"ic_tab_eyesight", @"ic_tab_dev", @"ic_tab_train"];
     NSArray *arrImageGray = @[@"ic_tab_mine_light", @"ic_tab_eyesight_light", @"ic_tab_dev_light", @"ic_tab_train_light"];
     NSArray *arrUrl = @[mineUrl, eyesightUrl, deviceUrl, billsUrl];
     NSMutableArray *arrVCs = [[NSMutableArray alloc] init];
     for (int i=0; i<arrTitle.count; i++) {
-        NSString *urlString = [baseUrl stringByAppendingString:arrUrl[i]];
-        UYUWebViewController *perVC = [[UYUWebViewController alloc] initWithUrlString:urlString];
+        NSString *urlString = [kCDBaseUrl stringByAppendingString:arrUrl[i]];
+        UIViewController *itemVC = nil;
         switch (i) {
             case 0:
+            {
+                UYUWebViewController *perVC = [[UYUWebViewController alloc] initWithUrlString:urlString];
                 perVC.canPullDownRefresh = YES;
                 perVC.canPullUpRefresh = NO;
+                itemVC = perVC;
+            }
                 break;
             case 1:
+            {
+                UYUWebViewController *perVC = [[UYUWebViewController alloc] initWithUrlString:urlString];
                 perVC.canPullDownRefresh = YES;
                 perVC.canPullUpRefresh = YES;
+                itemVC = perVC;
+            }
                 break;
             case 2:
+            {
+                UYUWebViewController *perVC = [[UYUWebViewController alloc] initWithUrlString:urlString];
                 perVC.canPullDownRefresh = YES;
                 perVC.canPullUpRefresh = YES;
+                itemVC = perVC;
+            }
                 break;
             case 3:
-                perVC.canPullDownRefresh = YES;
-                perVC.canPullUpRefresh = YES;
+            {
+                UYUUserHistoryViewController *vc = [[UYUUserHistoryViewController alloc] init];
+                __weak UYUUserHistoryViewController *weadUser = vc;
+                
+                [vc setMiddleNaviWithTitle:@"客户"];
+                [vc setRightNaviItemWithTitle:@"新建客户" image:nil action:^(UIButton *obj) {
+                    UYUCreateViewController *addUser = [[UYUCreateViewController alloc] init];
+                    [addUser setMiddleNaviWithTitle:@"新建客户"];
+
+                    [addUser setLeftNaviItemAction:^(UIButton *obj) {
+                        [weadUser.navigationController popViewControllerAnimated:YES];
+                    }];
+                    addUser.hidesBottomBarWhenPushed = YES;
+                    [weadUser.navigationController pushViewController:addUser animated:YES];
+                }];
+                itemVC = vc;
+            }
                 break;
                 
             default:
                 break;
         }
-        UINavigationController *navController = [self getPerTabBarNavigationWithVC:perVC
+        UINavigationController *navController = [self getPerTabBarNavigationWithVC:itemVC
                                                                        normalImage:arrImageNormal[i]
                                                                        selectImage:arrImageGray[i]
                                                                              title:arrTitle[i]];

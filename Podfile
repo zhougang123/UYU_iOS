@@ -6,4 +6,6 @@ pod 'AFNetworking'
 pod 'SVProgressHUD'
 pod 'NJKWebViewProgress'
 pod 'MJRefresh'
+pod 'MQTTClient'
+
 end
